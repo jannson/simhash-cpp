@@ -1,7 +1,7 @@
 CPP     = g++
 CPPOPTS = -g -O3 -Wall
 
-all: bench hash test
+all: bench hash
 
 deps: hashes/* tokenizers/* hash.hpp simhash.h simhash.cpp
 

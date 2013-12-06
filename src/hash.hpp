@@ -128,6 +128,47 @@ namespace Simhash {
             return hash;
         }
 
+        hash_t hash_hasher(uint64_t *vec, int len)
+        {
+            // Counts
+            int64_t v[64] = {
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0
+            };
+
+            hash_t hash(0);             // The hash we're trying to produce
+            size_t   j(0);              // Counter
+            size_t   window(3);         // How many tokens in rolling hash?
+            int     i;              // For stepping through tokens
+
+            /* Create a tokenizer, hash function, and cyclic */
+            Cyclic<hash_t> cyclic(window);
+
+            for (i = 0; i < len; i++) {
+                hash_t r = cyclic.push(vec[i]);
+                for (j = 63; j > 0; --j) {
+                    v[j] += (r & 1) ? 1 : -1;
+                    r = r >> 1;
+                }
+                v[j] += (r & 1) ? 1 : -1;
+            }
+
+            /* With counts appropriately tallied, create a 1 bit for each of
+             * the counts that's positive. That result is the hash. */
+            for (j = 0; j < 64; ++j) {
+                if (v[j] > 0) {
+                    hash = hash | (static_cast<hash_t>(1) << j);
+                }
+            }
+            return hash;
+        }
+
     private:
         /* Internal stuffs */
         hash_type      hasher;
